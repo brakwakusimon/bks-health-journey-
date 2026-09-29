@@ -1,0 +1,10 @@
+{
+  "name": "BKS Health Journey",
+  "short_name": "BKS Health",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0A1F44",
+  "description": "Personal health and habit tracking"
+}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0a1f44"><title>BKS Health Journey</title>
+<style>
+:root{--navy:#0a1f44;--gold:#f4d03f;--green:#18834b;--bg:#f4f6fa;--ink:#172338;--muted:#687386}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}header{background:var(--navy);color:white;padding:24px 20px 22px;border-radius:0 0 24px 24px}header small{color:#d6dfef}h1{font-size:25px;margin:5px 0}main{max-width:700px;margin:auto;padding:16px}.card{background:white;border-radius:18px;padding:17px;margin:12px 0;box-shadow:0 2px 12px #10264b0c}.row{display:flex;justify-content:space-between;align-items:center;gap:12px}.muted{color:var(--muted);font-size:13px}.big{font-size:27px;font-weight:750;color:var(--navy)}.bar{height:9px;background:#e8edf4;border-radius:9px;overflow:hidden;margin-top:10px}.bar span{display:block;height:100%;background:var(--green);width:0}h2{font-size:18px;margin:0 0 12px}.item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #edf0f4}.item:last-child{border:0}.item input{width:21px;height:21px;accent-color:var(--green)}label{font-size:15px}input[type=number],input[type=date],input[type=time]{padding:11px;border:1px solid #d8deea;border-radius:10px;font:inherit;width:100%;background:white}button{border:0;border-radius:12px;padding:12px 15px;background:var(--navy);color:white;font-weight:650;font-size:14px}button.secondary{background:#e9eef6;color:var(--navy)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:6px;margin:10px 0}.field label{font-size:13px;color:var(--muted)}.note{font-size:12px;color:var(--muted);line-height:1.5}.tabs{display:flex;gap:8px;overflow:auto;margin:14px 0}.tabs button{white-space:nowrap}.tabs button.active{background:var(--green)}.hidden{display:none}.pill{font-size:12px;color:var(--green);background:#e8f5ed;padding:5px 9px;border-radius:99px}footer{text-align:center;padding:15px;color:var(--muted);font-size:12px}
+</style><link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A1F44">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BKS Health">
+<link rel="apple-touch-icon" href="icon-192.png">
+</head><body>
+<header><small>YOUR PERSONAL WELLNESS TRACKER</small><h1>BKS Health Journey</h1><div id="today" style="color:#d6dfef;font-size:14px"></div></header>
+<main><div class="tabs"><button class="active" data-tab="home">Today</button><button class="secondary" data-tab="progress">Progress</button><button class="secondary" data-tab="settings">Reminders & data</button></div>
+<section id="home">
+<div class="card"><div class="row"><div><div class="muted">Today's habits</div><div class="big" id="count">0 / 5</div></div><span class="pill" id="status">Start today</span></div><div class="bar"><span id="fill"></span></div></div>
+<div class="card"><h2>Daily checklist</h2><div id="checks"></div><div class="note">Tick a habit when completed. Your entries are saved on this device.</div></div>
+<div class="card"><h2>Today's measurements (optional)</h2><div class="grid"><div class="field"><label>Weight (kg)</label><input id="weight" type="number" min="1" step=".1" placeholder="e.g. 80.5"></div><div class="field"><label>Waist (cm)</label><input id="waist" type="number" min="1" step=".1" placeholder="e.g. 95"></div></div><button id="saveMeasure">Save measurements</button></div>
+</section>
+<section id="progress" class="hidden"><div class="card"><h2>Recent measurements</h2><div id="history" class="muted">No measurements recorded yet.</div></div><div class="card"><h2>30-day habit summary</h2><div id="summary" class="muted"></div></div></section>
+<section id="settings" class="hidden"><div class="card"><h2>Reminder schedule</h2><p class="note">These are your preferred reminder times. For dependable daily alerts on iPhone, create them in the Apple Reminders app using the instructions below. This offline tracker cannot guarantee notifications while closed.</p><div id="reminders"></div><button id="copy">Copy reminder list</button></div><div class="card"><h2>Backup and privacy</h2><p class="note">Your entries are stored in this browser on this iPhone. Clearing Safari website data or deleting the app may erase them. Export a backup regularly.</p><div class="row"><button id="export">Export backup</button><button class="secondary" id="importBtn">Import backup</button><input id="file" type="file" accept="application/json" class="hidden"></div><p class="note">Do not share your backup file; it contains your health records.</p><button class="secondary" id="clear">Erase all app data</button></div></section>
+<footer>Personal tracking tool · Not a medical device</footer></main>
+<script>
+const habits=[["walk","Walk or take planned activity"],["strength","Strength exercise (if scheduled)"],["meals","Eat balanced meals"],["drinks","Choose water over sugary drinks"],["sleep","Aim for 7–9 hours of sleep"]];
+const times=[["Water","09:00"],["Exercise","18:30"],["Walking","19:00"],["Evening progress review","21:00"]];
+const key="bksHealthJourney_v1";let db=JSON.parse(localStorage.getItem(key)||'{"days":{},"measurements":[]}');
+const dateKey=()=>new Date().toLocaleDateString("en-CA");const today=dateKey();
+function save(){localStorage.setItem(key,JSON.stringify(db))}
+function day(){return db.days[today]||(db.days[today]={checks:{}})}
+function render(){document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});let d=day();let done=habits.filter(h=>d.checks[h[0]]).length;document.getElementById("count").textContent=done+" / "+habits.length;document.getElementById("fill").style.width=(done/habits.length*100)+"%";document.getElementById("status").textContent=done===5?"All habits checked":done?"Keep going":"Start today";
+document.getElementById("checks").innerHTML=habits.map(h=>`<div class="item"><input type="checkbox" data-id="${h[0]}" ${d.checks[h[0]]?"checked":""}><label>${h[1]}</label></div>`).join("");document.querySelectorAll("#checks input").forEach(x=>x.onchange=()=>{day().checks[x.dataset.id]=x.checked;save();render()});
+document.getElementById("weight").value=d.weight||"";document.getElementById("waist").value=d.waist||"";
+document.getElementById("reminders").innerHTML=times.map(t=>`<div class="item"><div style="flex:1">${t[0]}</div><strong>${t[1]}</strong></div>`).join("");
+let hist=db.measurements.slice(-10).reverse();document.getElementById("history").innerHTML=hist.length?hist.map(x=>`${x.date}: ${x.weight?x.weight+" kg":""}${x.waist?" · "+x.waist+" cm":""}`).join("<br>"):"No measurements recorded yet.";let days=Object.keys(db.days).sort().slice(-30);let total=days.reduce((a,k)=>a+habits.filter(h=>db.days[k].checks[h[0]]).length,0);document.getElementById("summary").textContent=days.length?`${total} habits completed across ${days.length} recorded days.`:"Start checking off your daily habits to see a summary."}
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));document.getElementById(b.dataset.tab).classList.remove("hidden");document.querySelectorAll("[data-tab]").forEach(x=>{x.classList.toggle("active",x===b);x.classList.toggle("secondary",x!==b)})});
+document.getElementById("saveMeasure").onclick=()=>{let d=day();d.weight=document.getElementById("weight").value;d.waist=document.getElementById("waist").value;if(d.weight||d.waist){db.measurements=db.measurements.filter(x=>x.date!==today);db.measurements.push({date:today,weight:d.weight,waist:d.waist})}save();render();alert("Measurements saved on this device.")};
+document.getElementById("copy").onclick=async()=>{let s=times.map(t=>t[0]+": "+t[1]).join("\n");try{await navigator.clipboard.writeText(s);alert("Reminder times copied. Open Apple Reminders to create them.")}catch(e){alert(s)}};
+document.getElementById("export").onclick=()=>{let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="bks-health-backup.json";a.click();URL.revokeObjectURL(a.href)};
+document.getElementById("importBtn").onclick=()=>document.getElementById("file").click();document.getElementById("file").onchange=async e=>{try{let x=JSON.parse(await e.target.files[0].text());if(!x.days||!x.measurements)throw Error();db=x;save();render();alert("Backup restored.")}catch(err){alert("That backup file could not be read.")}};
+document.getElementById("clear").onclick=()=>{if(confirm("Permanently erase all BKS Health Journey data on this device? Export a backup first if needed.")){localStorage.removeItem(key);db={days:{},measurements:[]};render()}};
+render();
+</script><script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
+}
+</script>
+</body></html>
